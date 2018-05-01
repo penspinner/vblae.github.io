@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Experiments</title>
+
+    <link rel="shortcut icon" type="icon" href="./res/favicon.ico"/>
+    <link rel="stylesheet" href="style/style.css">
+
+    <script type="text/javascript" src="js/logo.js"></script>
+    <script type="text/javascript" src="js/dropdown.js"></script>
+    <script type="text/javascript" src="js/disablespacescroll.js"></script>
+    <script type="text/javascript" src="js/bullets.js"></script>
+
+  </head>
+
+  <body onLoad="start()">
+    <canvas id="canvas"></canvas>
+    <div class="nav-bar">
+      <div class="dropdown">
+        <a onclick="myFunction()" class="dropbtn">Experiments</a>
+        <div id="myDropdown" class="dropdown-content">
+          <a href="rockets.html">Rockets</a>
+          <a href="planets.html">Planets</a>
+          <a href="bullets.html">Bullets</a>
+        </div>
+      </div>
+      <a class="nav-link" href="projects.html">Projects</a>
+      <a class="nav-link" href="./res/resume.pdf" target="_blank">Resume</a>
+      <a class="nav-link" href="about.html">About Me</a>
+    </div>
+
+    <div class="content-container">
+    	<div class="section">
+        <div class="section-header">
+          <h1>Bullets</h1>
+        </div><hr>
+
+        <div id="bullets-container" class="section-body spacing-small">
+          <canvas id="bullets-canvas" style="background:rgba(0,0,0,1);"></canvas>
+          <h1>...</h1>
+          <a class="document-link" href="https://github.com/Vblae/vblae.github.io/blob/master/js/bullets.js" target="_blank">View source
+          </a>
+        </div>
+      </div>
+      
+      <div class="section">
+        <div class="section-header">
+          <h1>Controls</h1>
+        </div><hr>
+        <div class="section-body">
+          <p class="indent-false">
+          <h4><bold>W</bold>, <bold>A</bold>, <bold>S</bold>, <bold>D</bold> - Movement </h4>
+          <h4><bold>Left Arrow Key</bold>, <bold>Right Arrow Key</bold> - Rotate </h4>
+          <h4><bold>Space Bar</bold> - Shoot </h4>
+          </p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

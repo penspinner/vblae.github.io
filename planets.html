@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Experiments</title>
+
+    <link rel="shortcut icon" type="icon" href="./res/favicon.ico"/>
+    <link rel="stylesheet" href="style/style.css">
+
+    <script type="text/javascript" src="js/logo.js"></script>
+    <script type="text/javascript" src="js/dropdown.js"></script>
+    <script type="text/javascript" src="js/disablespacescroll.js"></script>
+    <script type="text/javascript" src="js/planets.js"></script>
+
+  </head>
+
+  <body onLoad="start()">
+    <canvas id="canvas"></canvas>
+    <div class="nav-bar">
+      <div class="dropdown">
+        <a onclick="myFunction()" class="dropbtn">Experiments</a>
+        <div id="myDropdown" class="dropdown-content">
+          <a href="rockets.html">Rockets</a>
+          <a href="planets.html">Planets</a>
+          <a href="bullets.html">Bullets</a>
+        </div>
+      </div>
+      <a class="nav-link" href="projects.html">Projects</a>
+      <a class="nav-link" href="./res/resume.pdf" target="_blank">Resume</a>
+      <a class="nav-link" href="about.html">About Me</a>
+    </div>
+
+    <div class="content-container">
+    	<div class="section">
+        <div class="section-header">
+          <h1>Planets</h1>
+        </div><hr>
+
+        <div id="planets-container" class="section-body spacing-small">
+          <canvas id="planets-canvas" style="background:rgba(0,0,0,1);"></canvas>
+          <h1>...</h1>
+          <a class="document-link" href="https://github.com/Vblae/vblae.github.io/blob/master/js/planets.js" target="_blank">View source</a>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          <h1>Controls</h1>
+        </div><hr>
+        <div class="section-body">
+          <p class="indent-false">
+            This experiment only uses the mouse for user input. Useful things to know are that you can drag the map
+            to follow things that go offscreen as well as being able to drag the menu to move it out of the way.
+          </p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

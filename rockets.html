@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Experiments</title>
+
+    <link rel="shortcut icon" type="icon" href="./res/favicon.ico"/>
+    <link rel="stylesheet" href="style/style.css">
+
+    <script type="text/javascript" src="js/logo.js"></script>
+    <script type="text/javascript" src="js/dropdown.js"></script>
+    <script type="text/javascript" src="js/rockets.js"></script>
+  </head>
+
+  <body onLoad="start()">
+    <canvas id="canvas"></canvas>
+    <div class="nav-bar">
+      <div class="dropdown">
+        <a onclick="myFunction()" class="dropbtn">Experiments</a>
+        <div id="myDropdown" class="dropdown-content">
+          <a href="rockets.html">Rockets</a>
+          <a href="planets.html">Planets</a>
+          <a href="bullets.html">Bullets</a>
+        </div>
+      </div>
+      <a class="nav-link" href="projects.html">Projects</a>
+      <a class="nav-link" href="./res/resume.pdf" target="_blank">Resume</a>
+      <a class="nav-link" href="about.html">About Me</a>
+    </div>
+
+    <div class="content-container">
+      <div class="section">
+        <div class="section-header">
+          <h1>Programmable Rockets (works best on chrome)</h1>
+        </div><hr>
+
+        <div id="rockets-container" class="section-body spacing-small">
+          <canvas id="rockets-canvas" style="background:rgba(0,0,0,1);"></canvas>
+          <h1>...</h1>
+          <a class="document-link" href="https://github.com/Vblae/vblae.github.io/blob/master/js/rockets.js" target="_blank">View source</a>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          <h1>Writing Scripts</h1>
+        </div><hr>
+        <div class="section-body">
+          <p class="indent-false">
+            The first thing you must do is create a script using the the <strong>create</strong> command and give it 
+            a name of your choice. Next, use the <strong>edit</strong> command, passing it the name of the script you 
+            just created as an argument, this will open the text editor. Finally, click on the terminal, to bring it into
+            focus, and use the <strong>run</strong> command, passing it the name of the script you want to run, to execute
+            the script. The steps are outlined below.
+          </p>
+          <h1>NOTE:</h1>
+          <p class="indent-false">
+            There is a test script call 'test.rpl' which you can run using the <strong>run</strong> command or edit using
+            the <strong>edit</strong> command. The script looks as follows:
+          </p>
+          <pre>
+            thrust 10  // set the rockets thrust to 10
+            burn 100   // set the burn time to 100 milliseconds
+            
+            sequence left { // define a sequence called left
+              angle 180 // set rockets angle to 180
+              run       // fires the rocket using the current values of thrust, burn, and angle
+            }
+            
+            sequence up { // define a sequence called right
+              angle 270
+              run
+            }
+            
+            sequence right { // define a sequence called left
+              angle 0
+              run
+            }
+            
+            sequence down { // define a sequence called down
+              angle 90
+              run
+            }
+            
+            repeat 5 { // loop 5 times
+              do left  // call the sequence left
+              do up    // call the sequence up
+              do right // call the sequence right
+              do down  // call the sequece down 
+
+              repeat 5 { // inner loop
+                do left
+                do right
+              }
+            }
+          </pre>
+          <p class="indent-false">
+            The test script makes use of every language construct available.
+          </p>
+          <h3>1. Create a script</h1>
+          <p class="indent-false">
+            Create a script using the <strong>create</strong> command. See 'Using the Rocket Terminal' section below.
+          </p>
+
+          <h3>2. Edit the script</h1>
+          <p class="indent-false">
+            Edit the script using the <strong>edit</strong> command. See 'Using the Rocket Terminal' section below.
+          </p>
+
+          <h3>3. Run the script</h3>
+          <p class="indent-false">
+            Run the script using the <strong>run</strong> command. See 'Using the Rocket Terminal' section below.
+          </p>
+
+          <h3>4. Watch</h3>
+          <p class="indent-false">
+            Watch the rocket go.
+          </p>
+
+          <p class="indent-false">
+          You can also use the <strong>parse</strong> command to run a script. For example, you can type 'parse repeat 
+          5 { angle 10 run angle 90 run }' into the Rocket Terminal.
+          </p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          <h1>Using the Rocket Terminal</h1>
+        </div><hr>
+        <div class="section-body">
+          <h1>Commands:</h1>
+
+          <h3>create --- usage: create SCRIPTNAME</h3>
+          <p class="indent-false">
+            Creates a script named SCRIPTNAME. If a script with the given name already exists, create fails.
+          </p>
+
+          <h3>edit --- usage: edit SCRIPTNAME</h3>
+          <p class="indent-false">
+            Opens the script named SCRIPTNAME inside of the text editor for editing. If the script with the given name does not exist, edit fails.
+          </p>
+
+          <h3>set --- usage: set NAME VALUE</h3>
+          <p class="indent-false">
+            The set command takes in two arguments. The first argument is the NAME of the property you would like to set the value of. This name can be any of the following properties: "thurst" -thrust refers to how much thrust you would like the rocket to produce-, "angle" -angle refers to the angle at which you would like the rocket to thrust towards-, and "burn" -burn referes to how long you want the rocket to thrust at the given angle in milliseconds. The second argument is the VALUE you would like to give the property. This value can be any positive or negative number.
+          </p>
+
+          <h3>run --- usage: run [SCRIPTNAME]</h3>
+          <p class="indent-false">
+            The run command take in one optional argument SCRIPTNAME. If a script is provided the rocket will run the script until completion. If no script is provided the run command will tell the rocket controller to execute one sequence with the current values of the environment values "thrust", "angle", and "burn". This will result in the rocket producing the set amount of thrust ,at the set angle, for the set amount of burn (burntime). If a sequence is currently being executed the rocket controller will queue the sequence and execute it immediately after the current sequence finishes execution.
+          </p>
+
+          <h3>ls --- usage: ls</h3>
+          <p class="indent-false">
+            Prints the currently existing rocket scripts.
+
+          <h3>clear --- usage: clear</h3>
+          <p class="indent-false">
+            Clears the terminal buffer.
+          </p>
+
+          <h3>info --- usage: info</h3>
+          <p class="indent-false">
+            Prints information about the current state of the rocket to the terminal.
+          </p>
+
+          <h3>printenv --- usage: printenv</h3>
+          <p class="indent-false">
+            Prints the current value for thrust, angle, and burn to the terminal. 
+          </p>
+
+          <h3>reset --- usage: reset</h3>
+          <p class="indent-false">
+            Reset will reset the rockets position, angle, and speed back to the default values. But will not reset 
+            the values of the environment variables "thrust", "angle", and "burn". 
+          </p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

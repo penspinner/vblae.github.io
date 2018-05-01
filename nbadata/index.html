@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NBA STATS</title>
+    <link rel="shortcut icon" type="icon" href="../res/favicon.ico"/>
+    <link rel="stylesheet" href="style/index.css">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script type="text/javascript" src="js/index.js"></script>
+</head>
+<body onload="init()">
+    <div class="header">
+        <h1>NBA STAT DASHBOARD</h1>
+        <a href="../projects.html">BACK</a>
+        <a href="./res/demo.mp4" style="float:left;" target="blank">Tutorial</a>
+    </div>
+    <div class="dropdown y-drop">
+        <button class="dropbtn">y-axis</button>
+        <div id="y-dropdown" class="drop-body">
+            <a class="y-option" href="#">FGM</a>
+            <a class="y-option" href="#">FGA</a>
+            <a class="y-option" href="#">FGP</a>
+            <a class="y-option" href="#">3PM</a>
+            <a class="y-option" href="#">3PA</a>
+            <a class="y-option" href="#">3PP</a>
+            <a class="y-option" href="#">ORB</a>
+            <a class="y-option" href="#">TRB</a>
+            <a class="y-option" href="#">AST</a>
+            <a class="y-option" href="#">PTS</a>
+
+        </div>
+    </div>
+
+    <div class="dropdown x-drop">
+        <button class="dropbtn">x-axis</button>
+        <div id="x-dropdown" class="drop-body">
+            <a class="x-option" href="#">FGM</a>
+            <a class="x-option" href="#">FGA</a>
+            <a class="x-option" href="#">FGP</a>
+            <a class="x-option" href="#">3PM</a>
+            <a class="x-option" href="#">3PA</a>
+            <a class="x-option" href="#">3PP</a>
+            <a class="x-option" href="#">ORB</a>
+            <a class="x-option" href="#">TRB</a>
+            <a class="x-option" href="#">AST</a>
+            <a class="x-option" href="#">PTS</a>
+        </div>
+    </div>
+
+    <div class="dropdown2 bar-drop">
+        <button class="dropbtn">variable</button>
+        <div id="bar-dropdown" class="drop-body">
+            <a class="bar-option" href="#">FGM</a>
+            <a class="bar-option" href="#">FGA</a>
+            <a class="bar-option" href="#">FGP</a>
+            <a class="bar-option" href="#">3PM</a>
+            <a class="bar-option" href="#">3PA</a>
+            <a class="bar-option" href="#">3PP</a>
+            <a class="bar-option" href="#">ORB</a>
+            <a class="bar-option" href="#">TRB</a>
+            <a class="bar-option" href="#">AST</a>
+            <a class="bar-option" href="#">PTS</a>
+        </div>
+    </div>
+    <svg id="svg" class="svg"></svg>
+</body>
+</html>

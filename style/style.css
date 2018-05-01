@@ -1,0 +1,206 @@
+@import url(https://fonts.googleapis.com/css?family=Jura:400,300);
+
+html, body{
+    font-family: 'Jura';
+    font-weight: 400;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    background: rgba(0,0,0,0.0);
+
+}
+
+code {
+  /*display: block;*/
+  white-space: pre-wrap   
+}
+
+#canvas{
+    position: absolute;
+    height: 75px;
+    width: 175px;
+}
+
+#canvas:hover{
+    cursor: help;
+}
+
+
+.nav-bar{
+    height: 50px;
+    left: 0;
+    right: 0;
+    background: rgba(51,51,51,0.8);
+    padding-top: 25px;
+    padding-right: 15%;
+    margin:0;
+}
+
+.nav-link{
+    float:right;
+    color: white;
+    text-decoration: none;
+    font-size: 14pt;
+    margin-right: 20px;
+    letter-spacing: 1pt;
+}
+
+.nav-link:hover{
+    color: rgba(0,190,112,1);
+    cursor: url();
+}
+
+.content-container{
+    color: rgba(51,51,51,1);
+    padding-left: 15%;
+    padding-right: 15%;
+}
+
+.content-container h1.title{
+    font-size: 18pt;
+}
+
+.bio-container p{
+    font-size: 14pt;
+    text-indent:5em;
+    margin-left:5em;
+}
+
+.contact-information-container h1{
+    font-size: 14pt;
+}
+
+
+.section-header h1{
+    font-size: 18pt;
+}
+
+.section-header a.date{
+    font-size: 18pt;
+    float: right;
+}
+
+.section-body{
+    margin-bottom: 100px;
+    width: 100%;
+}
+
+.spacing-small{
+    margin-bottom: 40px;
+}
+
+.section-body h1{
+    font-size: 16pt;
+}
+
+.section-body p{
+    font-size: 14pt;
+    font-weight: 1000;
+    text-indent: 5em;
+}
+
+.section-body p.indent-false{
+    font-size: 14pt;
+    font-weight: 1000;
+    text-indent: 0em;
+}
+
+.section-body a.document-link{
+    background-color: rgba(51,51,51,0.8);
+    border-radius: 15%;
+    padding: 10px;
+    text-decoration: none;
+    font-size: 14pt;
+    color: white;
+}
+
+.section-body a.document-link:hover{
+    background-color: rgba(0,170,92,0.8);
+    border-radius: 15%;
+    color: rgba(51,51,51,0.8);
+}
+
+.input-icon{
+    width: 32px;
+    height: 32px;
+}
+
+input #image-button{
+    background: #ccc url('pdficon.png');
+    padding-left: 16px;
+    width: 32px;
+    height: 32px;
+}
+
+.img-circle {
+    width: 232px;
+    height: 232px;
+    border-radius: 50%;
+}
+
+.img-medium {
+    /*width: 1305px;
+    height: 881px;*/
+}
+
+hr{
+    border: 0;
+    height: 1px;
+    background: #333;
+    background-image: linear-gradient(to right, #aaa, #333, #aaa);
+}
+
+/* Drop down menu style from w3 schools example */
+
+/* Dropdown Button */
+.dropbtn {
+    float:right;
+    color: white;
+    text-decoration: none;
+    font-size: 14pt;
+    margin-right: 20px;
+    letter-spacing: 1pt;
+    cursor: pointer;
+}
+
+/* Dropdown button on hover & focus */
+.dropbtn:hover, .dropbtn:focus {
+    color: rgba(0,190,112,1);
+    cursor: url();
+}
+
+/* The container <div> - needed to position the dropdown content */
+.dropdown {
+    position: relative;
+    display: inline-block;
+    float:right;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+    color: rgba(51,51,51,1);
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {
+    color: rgba(0,190,112,1);
+    cursor: url();
+}
+
+/* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
+.show {
+    display:block;
+}
