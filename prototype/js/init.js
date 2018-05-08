@@ -1302,11 +1302,6 @@ let apps = (function() {
     return this;
   };
 
-  Application.prototype.defineContextProperty = function(name, value) {
-    this.context[name] = value;
-    return this;
-  };
-
   Application.prototype.createWindow = function(x, y, w, h) {
     this.window = windows.new.Window(x, y, w, h);
     this.window.attachApp(this);
@@ -1398,8 +1393,8 @@ let app = apps.new.Application("test-app")
   .createWindow(-display.tx() + 10, -display.ty() + 10, 1176, 600);
 
 app.onInit(function() {
-  this.defineContextProperty("clicks", [])
-      .defineContextProperty("clearColor", colors.string(30, 30, 30, 1));
+  this.context.clicks = [];
+  this.context.clearColor = colors.string(30, 30, 30, 1);
 });
 
 app.onUpdate(function() {
@@ -1425,8 +1420,8 @@ let otherApp = apps.new.Application("other-app")
   .createWindow(400, -100, 300, 100);
 
 otherApp.onInit(function() {
-  this.defineContextProperty("clicks", [])
-      .defineContextProperty("clearColor", colors.string(200, 200, 200, 1));
+  this.context.clicks = []
+  this.context.clearColor = colors.string(200, 200, 200, 1);
 });
 
 otherApp.onUpdate(function() {
