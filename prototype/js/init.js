@@ -308,8 +308,13 @@ let display = (function() {
   };
 
   __display.clear = function(c) {
+    console.log("display clear");
     return __region.clear(c);
   };
+
+  __display.clearRect = function(x, y, w, h, c) {
+    return __region.clearRect(x, y, w, h, c);
+  }
 
   __display.width = function() {
     return __region.w;
@@ -575,6 +580,10 @@ let display = (function() {
     return this;
   };
 
+  DrawingRegion.prototype.clearRect = function(x, y, w, h, c) {
+    this.fillRect(x, y, w, h, c);
+  }
+
   DrawingRegion.prototype.resize = function(w, h) {
     this.ctx.translate(-this.tx, -this.ty);
     __display.adjustCanvas(this.cnvs, w, h);
@@ -715,6 +724,7 @@ let windows = (function() {
         if(__foregroundWindow !=  curr){
           __foregroundWindow = curr;
           __bringToFront(__foregroundWindow);
+          __foregroundWindow.forceDraw()
         }
 
         __foregroundWindow.handleMouseDown(e);
@@ -759,6 +769,8 @@ let windows = (function() {
 
     this.id = null;
     this.minimized = false;
+    this.redrawHeader = true;
+    this.redrawBody = true;
     this.headerHeight = 25;
     this.header = display.new.DrawingRegion(x, y, w, this.headerHeight);
     this.body = display.new.DrawingRegion(x, y + this.headerHeight, w, h);
@@ -995,6 +1007,9 @@ let windows = (function() {
   };
 
   Window.prototype.moveTo = function(e) {
+    this.clear();
+    this.forceDraw();
+
     let newx = e.x + this.selectionDistance.x,
         newy = e.y + this.selectionDistance.y;
 
@@ -1013,7 +1028,6 @@ let windows = (function() {
 
     this.bounds.updatePosition(newx, newy);
     this.repositionWindowElements(newx, newy);
-    display.clear();
   };
 
   Window.prototype.toInnerCoordinates = function(e) {
@@ -1023,25 +1037,42 @@ let windows = (function() {
   };
 
   Window.prototype.clear = function() {
-    this.header.clear(Window.defaults.headerColor);
-    this.body.clear(Window.defaults.bodyColor);
+    display.clearRect(this.header.x, this.header.y, this.header.w, this.header.h + this.body.h);
+  };
+
+  Window.prototype.clearBody = function() {
+    display.clearRect(this.body.x, this.body.y, this.body.w, this.body.h);
   };
 
   Window.prototype.draw = function() {
-    if(this.app && this.app.name)
-      this.header.fillText(this.app.name, -this.header.tx + 10, -this.header.ty + 15,
-                           Window.defaults.headerTextColor);
+    if(this.redrawHeader){
+      this.header.clear(Window.defaults.headerColor);
+      if(this.app && this.app.name)
+        this.header.fillText(this.app.name, -this.header.tx + 10, -this.header.ty + 15,
+                             Window.defaults.headerTextColor);
 
-    if(this.minimized)
-      this.drawExpandIcon();
-    else
-      this.drawMinimizeIcon();
+      if(this.minimized)
+        this.drawExpandIcon();
+      else
+        this.drawMinimizeIcon();
 
-    this.drawCloseIcon();
-    this.header.draw();
-    if(!this.minimized)
+      this.drawCloseIcon();
+      this.header.draw();
+      this.redrawHeader = false;
+      console.log("header redrawn");
+    }
+
+    if(!this.minimized && this.redrawBody){
       this.body.draw();
+      this.redrawBody = false;
+      console.log("body redrawn");
+    }
   };
+
+  Window.prototype.forceDraw = function() {
+    this.redrawHeader = true;
+    this.redrawBody = true;
+  }
 
   Window.prototype.drawExpandIcon = function() {
     this.header.strokeRect(this.header.tx - 55, -8, 20, 16, this.minimizeIconColor);
@@ -1064,7 +1095,6 @@ let windows = (function() {
   function __bringToFront(w) {
     __windowList.remove(w);
     __windowList.appendTail(w);
-    display.clear();
   }
 
   function __calcSelectionDistance(e) {
@@ -1073,38 +1103,48 @@ let windows = (function() {
   }
 
   function __minimizeWindow(e) {
+    this.clearBody();
+
     this.minimized = !this.minimized;
+    
+    this.redrawHeader = true;
+    if(!this.minimized)
+      this.redrawBody = true;
 
     if(this.minimized)
       this.bounds.updateDimension(this.header.w, this.header.h);
     else
       this.bounds.updateDimension(this.header.w, this.header.h + this.body.h);
-
-    display.clear();
   }
 
   function __closeWindow(e) {
     console.log("close window");
-    // display.clear();
   }
 
   function __onMouseEnterMinimize(e) {
     this.minimizeIconColor = Window.defaults.mouseOverColor;
+    this.redrawHeader = true;
   }
 
   function __onMouseExitMinimize(e) {
     this.minimizeIconColor = Window.defaults.headerTextColor;
+    this.redrawHeader = true;
   }
   
   function __onMouseEnterClose(e) {
     this.closeIconColor = Window.defaults.mouseOverColor;
+    this.redrawHeader = true;
   }
 
   function __onMouseExitClose(e) {
     this.closeIconColor = Window.defaults.headerTextColor;
+    this.redrawHeader = true;
   }
 
   function __northWestResize(e) {
+    this.clear();
+    this.forceDraw();
+
     let newx = e.x + this.selectionDistance.x,
         newy = this.minimized ? this.northWestResize.y : e.y + this.selectionDistance.y,
         newWidth = this.body.w + (this.northWestResize.x - newx),
@@ -1132,10 +1172,12 @@ let windows = (function() {
     this.northWestResize.updatePosition(newx, newy);
     this.northEastResize.updatePosition(this.northEastResize.x, newy);
     this.southWestResize.updatePosition(newx, this.southWestResize.y);
-    display.clear();
   }
 
   function __northEastResize(e) {
+    this.clear();
+    this.forceDraw();
+
     let newx = e.x + this.selectionDistance.x,
         newy = this.minimized ? this.northEastResize.y : e.y + this.selectionDistance.y,
         newWidth = this.body.w + (newx - this.northEastResize.x),
@@ -1163,10 +1205,12 @@ let windows = (function() {
     this.northWestResize.updatePosition(this.northWestResize.x, newy);
     this.northEastResize.updatePosition(newx, newy);
     this.southEastResize.updatePosition(newx, this.southEastResize.y);
-    display.clear();
   }
 
   function __southWestResize(e) {
+    this.clear();
+    this.forceDraw();
+
     let newx = e.x + this.selectionDistance.x,
         newy = e.y + this.selectionDistance.y,
         newWidth = this.body.w + (this.southWestResize.x - newx),
@@ -1192,10 +1236,12 @@ let windows = (function() {
     this.northWestResize.updatePosition(newx, this.northWestResize.y);
     this.southWestResize.updatePosition(newx, newy);
     this.southEastResize.updatePosition(this.southEastResize.x, newy);
-    display.clear();
   }
 
   function __southEastResize(e) {
+    this.clear();
+    this.forceDraw();
+
     let newx = e.x + this.selectionDistance.x,
         newy = e.y + this.selectionDistance.y,
         newWidth = this.body.w + (newx - this.southEastResize.x),
@@ -1220,7 +1266,6 @@ let windows = (function() {
     this.northEastResize.updatePosition(newx, this.northEastResize.y);
     this.southWestResize.updatePosition(this.southWestResize.x, newy);
     this.southEastResize.updatePosition(newx, newy);
-    display.clear();
   }
 
   let __new = {};
@@ -1242,8 +1287,6 @@ let apps = (function() {
   let __appList = [];
 
   __apps.run = function() {
-    display.clear();
-    windows.clear();
     for(let i = 0; i < __appList.length; i++){
       let app = __appList[i];
       if(!app.initialized && app.init)
