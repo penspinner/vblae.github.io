@@ -1008,7 +1008,9 @@ let windows = (function() {
 
   Window.prototype.moveTo = function(e) {
     this.clear();
-    this.forceDraw();
+    this.redrawHeader = true;
+    if(!this.minimized)
+      this.redrawBody = true;
 
     let newx = e.x + this.selectionDistance.x,
         newy = e.y + this.selectionDistance.y;
@@ -1037,7 +1039,10 @@ let windows = (function() {
   };
 
   Window.prototype.clear = function() {
-    display.clearRect(this.header.x, this.header.y, this.header.w, this.header.h + this.body.h);
+    if(!this.minimized)
+      display.clearRect(this.header.x, this.header.y, this.header.w, this.header.h + this.body.h);
+    else
+      display.clearRect(this.header.x, this.header.y, this.header.w, this.header.h);
   };
 
   Window.prototype.clearBody = function() {
@@ -1071,6 +1076,10 @@ let windows = (function() {
 
   Window.prototype.forceDraw = function() {
     this.redrawHeader = true;
+    this.redrawBody = true;
+  }
+
+  Window.prototype.forceBodyDraw = function() {
     this.redrawBody = true;
   }
 
@@ -1143,7 +1152,9 @@ let windows = (function() {
 
   function __northWestResize(e) {
     this.clear();
-    this.forceDraw();
+    this.redrawHeader = true;
+    if(!this.minimized)
+      this.redrawBody = true;
 
     let newx = e.x + this.selectionDistance.x,
         newy = this.minimized ? this.northWestResize.y : e.y + this.selectionDistance.y,
@@ -1176,7 +1187,9 @@ let windows = (function() {
 
   function __northEastResize(e) {
     this.clear();
-    this.forceDraw();
+    this.redrawHeader = true;
+    if(!this.minimized)
+      this.redrawBody = true;
 
     let newx = e.x + this.selectionDistance.x,
         newy = this.minimized ? this.northEastResize.y : e.y + this.selectionDistance.y,
@@ -1437,6 +1450,7 @@ let app = apps.new.Application("test-app")
 
 app.onInit(function() {
   this.context.clicks = [];
+  this.context.redraw = true;
   this.context.clearColor = colors.string(30, 30, 30, 1);
 });
 
@@ -1444,19 +1458,27 @@ app.onUpdate(function() {
   let clicks = this.context.clicks,
       drawingRegion = this.window.drawingRegion();
 
-  drawingRegion.clear(this.context.clearColor);
-  for(let c of clicks)
-    drawingRegion.strokeArc(c.x, c.y, 10, c.c);
+  if(this.context.redraw){
+    drawingRegion.clear(this.context.clearColor);
+    for(let c of clicks)
+      drawingRegion.strokeArc(c.x, c.y, 10, c.c);
+
+    this.window.forceBodyDraw()
+    this.context.redraw = false;
+  }
 });
 
 app.onMouseDown(function(e) {
   let color = e.shift ? colors.string(120, 80, 0, 1) : colors.string(255, 255, 255, 1);
   this.context.clicks.push({x: e.x, y: e.y, c: color});
+  this.context.redraw = true;
 });
 
 app.onKeyDown(function(e) {
-  if(e.key == "c")
+  if(e.key == "c"){
     this.context.clicks = [];
+    this.context.redraw = true;
+  }
 });
 
 let otherApp = apps.new.Application("other-app")
@@ -1474,6 +1496,8 @@ otherApp.onUpdate(function() {
   drawingRegion.clear(this.context.clearColor);  
   for(let c of clicks)
     drawingRegion.strokeRect(c.x - 5, c.y - 5, 10, 10, colors.string(0, 0, 0, 1));
+
+  this.window.forceBodyDraw();
 });
 
 otherApp.onMouseMove(function(e) {
