@@ -393,6 +393,7 @@ let display = (function() {
     this.cnvs = document.createElement("canvas");
     this.ctx = this.cnvs.getContext("2d");
     this.parent = __region;
+    this.observers = [];
   }
 
   DrawingRegion.prototype = Object.create(null);
@@ -403,10 +404,24 @@ let display = (function() {
     return this;
   };
 
+  DrawingRegion.prototype.addObserver = function(o) {
+    this.observers.push(o);
+  };
+
+  DrawingRegion.prototype.notifyObservers = function() {
+    for(let i = 0; i < this.observers.length; i++){
+      if(this.observers[i].onChange)
+        this.observers[i].onChange()
+      else
+        console.warn("Observer", i, "no onChange() defined")
+    }
+  }
+
   DrawingRegion.prototype.draw = function() {
     // __region.strokeRect(this.x - 1, this.y - 1, this.w + 2, this.h + 2, colors.string(155, 155, 155, 1));
     // __display.drawImage(this.cnvs, this.x, this.y);
     this.parent.drawImage(this.cnvs, this.x, this.y);
+    this.notifyObservers();
     return this;
   };
 
@@ -427,6 +442,7 @@ let display = (function() {
     if(c) 
       ctx.fillStyle = oc;
 
+    this.notifyObservers();
     return this;
   };
 
@@ -442,6 +458,7 @@ let display = (function() {
     if(c) 
       ctx.fillStyle = oc;
 
+    this.notifyObservers();
     return this;
   };
 
@@ -457,6 +474,7 @@ let display = (function() {
     if(c)
       ctx.strokeStyle = oc;
 
+    this.notifyObservers();
     return this;
   };
 
@@ -474,6 +492,7 @@ let display = (function() {
     if(c) 
       ctx.fillStyle = oc;
 
+    this.notifyObservers();
     return this;
   };
 
@@ -491,6 +510,7 @@ let display = (function() {
     if(c)
       ctx.strokeStyle = oc;
 
+    this.notifyObservers();
     return this;
   };
 
@@ -509,6 +529,7 @@ let display = (function() {
     if(c) 
       ctx.strokeStyle = oc;
 
+    this.notifyObservers();
     return this;
   };
 
@@ -536,6 +557,7 @@ let display = (function() {
     if(c)
       ctx.fillStyle = oc;
 
+    this.notifyObservers();
     return this;
   };
 
@@ -562,6 +584,7 @@ let display = (function() {
     if(c)
       ctx.strokeStyle = oc;
 
+    this.notifyObservers();
     return this;
   };
 
@@ -577,11 +600,13 @@ let display = (function() {
     if(c)
       ctx.fillStyle = oc
 
+    this.notifyObservers();
     return this;
   };
 
   DrawingRegion.prototype.clearRect = function(x, y, w, h, c) {
     this.fillRect(x, y, w, h, c);
+    return this;
   }
 
   DrawingRegion.prototype.resize = function(w, h) {
@@ -774,6 +799,8 @@ let windows = (function() {
     this.headerHeight = 25;
     this.header = display.new.DrawingRegion(x, y, w, this.headerHeight);
     this.body = display.new.DrawingRegion(x, y + this.headerHeight, w, h);
+    this.body.addObserver(this);
+
     this.bounds = utils.new.BoundingBox(x, y, w, h + this.headerHeight);
 
     this.minimize = utils.new.BoundingBox(x + this.header.w - 55, y + this.headerHeight / 2 - 10, 20, 20);
@@ -877,6 +904,11 @@ let windows = (function() {
   Window.prototype.setParentRegion = function(p) {
     this.header.setParentRegion(p);
     this.body.setParentRegion(p);
+  };
+
+  Window.prototype.onChange = function() {
+    this.redrawBody = true;
+    return this;
   }
 
   Window.prototype.onMouseDown = function(f, o) {
@@ -1040,13 +1072,13 @@ let windows = (function() {
 
   Window.prototype.clear = function() {
     if(!this.minimized)
-      display.clearRect(this.header.x, this.header.y, this.header.w, this.header.h + this.body.h);
+      display.clearRect(this.header.x, this.header.y, this.header.w, this.header.h + this.body.h + 0.5);
     else
-      display.clearRect(this.header.x, this.header.y, this.header.w, this.header.h);
+      display.clearRect(this.header.x, this.header.y, this.header.w, this.header.h + 0.5);
   };
 
   Window.prototype.clearBody = function() {
-    display.clearRect(this.body.x, this.body.y, this.body.w, this.body.h);
+    display.clearRect(this.body.x, this.body.y, this.body.w, this.body.h + 0.5);
   };
 
   Window.prototype.draw = function() {
@@ -1064,13 +1096,11 @@ let windows = (function() {
       this.drawCloseIcon();
       this.header.draw();
       this.redrawHeader = false;
-      console.log("header redrawn");
     }
 
     if(!this.minimized && this.redrawBody){
       this.body.draw();
       this.redrawBody = false;
-      console.log("body redrawn");
     }
   };
 
@@ -1450,7 +1480,6 @@ let app = apps.new.Application("test-app")
 
 app.onInit(function() {
   this.context.clicks = [];
-  this.context.redraw = true;
   this.context.clearColor = colors.string(30, 30, 30, 1);
 });
 
@@ -1458,14 +1487,9 @@ app.onUpdate(function() {
   let clicks = this.context.clicks,
       drawingRegion = this.window.drawingRegion();
 
-  if(this.context.redraw){
-    drawingRegion.clear(this.context.clearColor);
-    for(let c of clicks)
-      drawingRegion.strokeArc(c.x, c.y, 10, c.c);
-
-    this.window.forceBodyDraw()
-    this.context.redraw = false;
-  }
+  drawingRegion.clear(this.context.clearColor);
+  for(let c of clicks)
+    drawingRegion.strokeArc(c.x, c.y, 10, c.c);
 });
 
 app.onMouseDown(function(e) {
@@ -1496,8 +1520,6 @@ otherApp.onUpdate(function() {
   drawingRegion.clear(this.context.clearColor);  
   for(let c of clicks)
     drawingRegion.strokeRect(c.x - 5, c.y - 5, 10, 10, colors.string(0, 0, 0, 1));
-
-  this.window.forceBodyDraw();
 });
 
 otherApp.onMouseMove(function(e) {
