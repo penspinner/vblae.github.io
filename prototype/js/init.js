@@ -409,11 +409,11 @@ let display = (function() {
   };
 
   DrawingRegion.prototype.notifyObservers = function() {
-    for(let i = 0; i < this.observers.length; i++){
-      if(this.observers[i].onChange)
-        this.observers[i].onChange()
+    for(let o of this.observers){
+      if(o.onChange)
+        o.onChange();
       else
-        console.warn("Observer", i, "no onChange() defined")
+        console.warn("Observer", o, "no onChange() defined");
     }
   }
 
@@ -748,8 +748,8 @@ let windows = (function() {
       if(curr.contains(e.x, e.y)){
         if(__foregroundWindow !=  curr){
           __foregroundWindow = curr;
-          __bringToFront(__foregroundWindow);
           __foregroundWindow.forceDraw()
+          __bringToFront(__foregroundWindow);
         }
 
         __foregroundWindow.handleMouseDown(e);
@@ -1086,7 +1086,7 @@ let windows = (function() {
       this.header.clear(Window.defaults.headerColor);
       if(this.app && this.app.name)
         this.header.fillText(this.app.name, -this.header.tx + 10, -this.header.ty + 15,
-                             Window.defaults.headerTextColor);
+          Window.defaults.headerTextColor);
 
       if(this.minimized)
         this.drawExpandIcon();
@@ -1436,7 +1436,7 @@ let apps = (function() {
   let __new = {};
 
   __new.Application = function(name) {
-    let newApp = new Application(name ? name: "no-name");
+    let newApp = new Application(name ? name : "no-name");
     __addToAppList(newApp);
     return newApp;
   };
@@ -1524,6 +1524,13 @@ otherApp.onUpdate(function() {
 
 otherApp.onMouseMove(function(e) {
   this.context.clicks.push(e);
+});
+
+otherApp.onKeyDown(function(e) {
+  if(e.key == "c"){
+    this.context.clicks = [];
+    this.context.redraw = true;
+  }
 });
 
 apps.run();

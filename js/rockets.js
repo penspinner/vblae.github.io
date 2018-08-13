@@ -350,7 +350,7 @@ var RocketController = {
 
     var angle = Utils.degreesToRads(this.sequence.angle);
     var ax = (this.sequence.thrust * Math.cos(angle)) / this.rocket.mass,
-        ay = (this.sequence.thrust * Math.sin(angle)) / this.rocket.mass;
+        ay = (this.sequence.thrust * Math.sin(angle)) / this.rocket.mass;                                        
 
     this.rocket.dx += ax;
     this.rocket.dy += ay;
