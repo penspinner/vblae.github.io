@@ -50,8 +50,8 @@ let utils = (function() {
   };
 
   __utils.containsPoint = function(x, y, bounds) {
-    return __utils.inRange(x, bounds.lx, bounds.rx) && 
-           __utils.inRange(y, bounds.ty, bounds.by);
+    return __utils.inRange(x, bounds.x, bounds.x + bounds.w) && 
+           __utils.inRange(y, bounds.y, bounds.y + bounds.h);
   },
 
   __utils.inRange = function(value, min, max) {
@@ -427,6 +427,8 @@ let display = (function() {
 
   DrawingRegion.prototype.drawImage = function(image, dx, dy) {
     this.ctx.drawImage(image, dx, dy, image.width / __pr, image.height / __pr);
+    this.notifyObservers();
+    return this;
   };
 
   DrawingRegion.prototype.fillText = function(t, x, y, c) {
@@ -535,7 +537,7 @@ let display = (function() {
 
   DrawingRegion.prototype.fillPath = function(l, c) {
     if(l.length <= 0)
-      return __display;
+      return this;
 
     let ctx = this.ctx,
         oc = ctx.fillStyle;
@@ -609,6 +611,14 @@ let display = (function() {
     return this;
   }
 
+  DrawingRegion.prototype.clearOnParent = function(c) {
+    if(!this.parent)
+      return this;
+
+    this.parent.clearRect(this.x, this.y, this.w, this.h, c);
+    return this;
+  } 
+
   DrawingRegion.prototype.resize = function(w, h) {
     this.ctx.translate(-this.tx, -this.ty);
     __display.adjustCanvas(this.cnvs, w, h);
@@ -624,15 +634,20 @@ let display = (function() {
 
   DrawingRegion.prototype.grow = function(dw, dh) {
     this.resize(this.w + dw, this.h + dh);
+    return this;
   }
 
   DrawingRegion.prototype.contains = function(x, y) {
-    return utils.containsPoint(x, y, {
-      lx: this.x,
-      rx: this.x + this.w,
-      ty: this.y,
-      by: this.y + this.h
-    });
+    return utils.containsPoint(
+      x,
+      y, 
+      {
+        x: this.x,
+        y: this.y,
+        w: this.w,
+        h: this.h,
+      },
+    );
   };
 
   function DisplaceableDrawingRegion(x, y, w, h) {
@@ -826,7 +841,7 @@ let windows = (function() {
       this.close,
       this.header,
       this.southWestResize,
-      this.southEastResize
+      this.southEastResize,
     ];
 
     this.windowElementsOnMouseDown = [
@@ -837,7 +852,7 @@ let windows = (function() {
       __calcSelectionDistance,
       __calcSelectionDistance,
       __calcSelectionDistance,
-      __calcSelectionDistance
+      __calcSelectionDistance,
     ];
 
     this.windowElementsOnMouseDrag = [
@@ -847,27 +862,27 @@ let windows = (function() {
         null,
         this.moveTo,
         __southWestResize,
-        __southEastResize
+        __southEastResize,
     ];
 
     this.windowElementsOnMouseEnter = [
-      null,
-      null,
+      __onMouseEnterNorthWestResize,
+      __onMouseEnterNorthEastResize,
       __onMouseEnterMinimize,
       __onMouseEnterClose,
       null,
-      null,
-      null
+      __onMouseEnterSouthWestResize,
+      __onMouseEnterSouthEastResize,
     ];
 
     this.windowElementsOnMouseExit = [
-      null,
-      null,
+      __onMouseExitNorthWestResize,
+      __onMouseExitNorthEastResize,
       __onMouseExitMinimize,
       __onMouseExitClose,
       null,
-      null,
-      null
+      __onMouseExitSouthWestResize,
+      __onMouseExitSouthEastResize,
     ];
 
     this.eventListenerCache = new Map();
@@ -1072,9 +1087,9 @@ let windows = (function() {
 
   Window.prototype.clear = function() {
     if(!this.minimized)
-      display.clearRect(this.header.x, this.header.y, this.header.w, this.header.h + this.body.h + 0.5);
-    else
-      display.clearRect(this.header.x, this.header.y, this.header.w, this.header.h + 0.5);
+      this.body.clearOnParent();
+    
+    this.header.clearOnParent();
   };
 
   Window.prototype.clearBody = function() {
@@ -1158,6 +1173,38 @@ let windows = (function() {
 
   function __closeWindow(e) {
     console.log("close window");
+  }
+
+  function __onMouseEnterNorthWestResize(e) {
+    document.body.style.cursor = "nw-resize";
+  }
+
+  function __onMouseExitNorthWestResize(e) {
+    document.body.style.cursor = "default";
+  }
+
+  function __onMouseEnterNorthEastResize(e) {
+    document.body.style.cursor = "ne-resize";
+  }
+
+  function __onMouseExitNorthEastResize(e) {
+    document.body.style.cursor = "default";
+  }
+
+  function __onMouseEnterSouthWestResize(e) {
+    document.body.style.cursor = "sw-resize";
+  }
+
+  function __onMouseExitSouthWestResize(e) {
+    document.body.style.cursor = "default";
+  }
+
+  function __onMouseEnterSouthEastResize(e) {
+    document.body.style.cursor = "se-resize";
+  }
+
+  function __onMouseExitSouthEastResize(e) {
+    document.body.style.cursor = "default";
   }
 
   function __onMouseEnterMinimize(e) {

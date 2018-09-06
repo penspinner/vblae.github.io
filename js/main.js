@@ -254,7 +254,6 @@ Vec.dot = function(vec0, vec1) {
 
 Vec.norm = function(vec) {
   var magnitude = vec.magnitude();
-
   return new Vec(vec.x / magnitude, vec.y / magnitude);
 }
 
