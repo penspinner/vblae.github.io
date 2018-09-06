@@ -1371,12 +1371,43 @@ let windows = (function() {
   return __windows;
 })();
 
-let apps = (function() {
-  let __apps = {};
+let os = (() => {
+  let __os = {};
 
   let __appList = [];
 
-  __apps.run = function() {
+  __os.init = () => {
+    display.init();
+    mouse.onMouseDown((e) => {
+      windows.onMouseDown(e);
+    });
+
+    mouse.onMouseUp((e) => {
+      windows.onMouseUp(e);
+    });
+
+    mouse.onMouseMove((e) => {
+      windows.onMouseMove(e);
+    });
+
+    mouse.onMouseEnter((e) => {
+      windows.onMouseEnter(e);
+    });
+
+    mouse.onMouseExit((e) => {
+      windows.onMouseExit(e);
+    });
+
+    keyboard.onKeyDown((e) => {
+      windows.onKeyDown(e);
+    });
+
+    keyboard.onKeyUp((e) => {
+      windows.onKeyUp(e);
+    });
+  };
+
+  __os.run = () => {
     for(let i = 0; i < __appList.length; i++){
       let app = __appList[i];
       if(!app.initialized && app.init)
@@ -1390,20 +1421,22 @@ let apps = (function() {
     }
 
     windows.draw();
-    requestAnimationFrame(__apps.run);
+    requestAnimationFrame(__os.run);
   };
 
-  function Application(name) {
+  function Application(name, x, y, w, h) {
     this.name = name;
     this.initialized = false;
     this.started = false;
 
-    this.window = null;
     this.init = null;
     this.start = null;
     this.update = null;
 
     this.context = {};
+    this.window = windows.new.Window(x, y, w, h);
+    this.window.attachApp(this);
+    console.log("window", this.window);
   }
 
   Application.prototype = Object.create(null); 
@@ -1432,12 +1465,6 @@ let apps = (function() {
   Application.prototype.onUpdate = function(f) {
     this.update = f;
     this.update.bind(this);
-    return this;
-  };
-
-  Application.prototype.createWindow = function(x, y, w, h) {
-    this.window = windows.new.Window(x, y, w, h);
-    this.window.attachApp(this);
     return this;
   };
 
@@ -1482,48 +1509,20 @@ let apps = (function() {
 
   let __new = {};
 
-  __new.Application = function(name) {
-    let newApp = new Application(name ? name : "no-name");
+  __new.Application = function(name, x, y, w, h) {
+    let newApp = new Application(name ? name : "no-name", x, y, w, h);
     __addToAppList(newApp);
     return newApp;
   };
 
-  __apps.new = __new;
-  return __apps;
+  __os.new = __new;
+  return __os;
 })();
 
-display.init();
+os.init();
+os.run();
 
-mouse.onMouseDown((e) => {
-  windows.onMouseDown(e);
-});
-
-mouse.onMouseUp((e) => {
-  windows.onMouseUp(e);
-});
-
-mouse.onMouseMove((e) => {
-  windows.onMouseMove(e);
-});
-
-mouse.onMouseEnter((e) => {
-  windows.onMouseEnter(e);
-});
-
-mouse.onMouseExit((e) => {
-  windows.onMouseExit(e);
-});
-
-keyboard.onKeyDown((e) => {
-  windows.onKeyDown(e);
-});
-
-keyboard.onKeyUp((e) => {
-  windows.onKeyUp(e);
-});
-
-let app = apps.new.Application("test-app")
-  .createWindow(-display.tx() + 10, -display.ty() + 10, 1176, 600);
+let app = os.new.Application("test-app", -display.tx() + 10, -display.ty() + 10, 1176, 600);
 
 app.onInit(function() {
   this.context.clicks = [];
@@ -1552,8 +1551,7 @@ app.onKeyDown(function(e) {
   }
 });
 
-let otherApp = apps.new.Application("other-app")
-  .createWindow(400, -100, 300, 100);
+let otherApp = os.new.Application("other-app", 400, -100, 300, 100);
 
 otherApp.onInit(function() {
   this.context.clicks = []
@@ -1579,5 +1577,3 @@ otherApp.onKeyDown(function(e) {
     this.context.redraw = true;
   }
 });
-
-apps.run();
