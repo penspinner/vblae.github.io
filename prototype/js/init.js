@@ -922,7 +922,7 @@ let windows = (function() {
   };
 
   Window.prototype.onChange = function() {
-    this.redrawBody = true;
+    this.forceDraw();
     return this;
   }
 
@@ -1088,7 +1088,7 @@ let windows = (function() {
   Window.prototype.clear = function() {
     if(!this.minimized)
       this.body.clearOnParent();
-    
+
     this.header.clearOnParent();
   };
 
