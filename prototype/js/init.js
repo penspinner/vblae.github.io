@@ -1148,8 +1148,7 @@ let windows = (function() {
   };
 
   function __calcSelectionDistance(e) {
-    let selected = this.windowElements[this.selectedElementIndex];
-    this.selectionDistance = utils.pointDiff({x: selected.x, y: selected.y}, e);
+    this.selectionDistance = utils.pointDiff(this.windowElements[this.selectedElementIndex], e);
   }
 
   function __minimizeWindow(e) {
@@ -1509,7 +1508,7 @@ let os = (() => {
   };
 
   function __addToAppList(a) {
-    __appList.push(a);
+    __apps.push(a);
   }
 
   let __new = {};
