@@ -638,16 +638,7 @@ let display = (function() {
   }
 
   DrawingRegion.prototype.contains = function(x, y) {
-    return utils.containsPoint(
-      x,
-      y, 
-      {
-        x: this.x,
-        y: this.y,
-        w: this.w,
-        h: this.h,
-      },
-    );
+    return utils.containsPoint(x, y, this);
   };
 
   function DisplaceableDrawingRegion(x, y, w, h) {
@@ -706,7 +697,6 @@ let mouse = (function() {
     display.onMouseExit(f);
   };
 
-
   return __mouse;
 })();
 
@@ -740,34 +730,49 @@ let keyboard = (function() {
 let windows = (function() {
   let __windows = {};
 
-  let __foregroundWindow = null;
-
   let __availableWindowID = 0;
+  let __availableWindowGroupID = 0;
 
-  let __windowList = utils.new.TransparentList();
+   function WindowGroup(id) {
+    this.id = id;
+    this.foregroundWindow = null;
+    this.windows = utils.new.TransparentList();
+  }
 
-  __windows.clear = function() {
-    __windowList.each((w) => {
+  WindowGroup.prototype = Object.create(null);
+  WindowGroup.prototype.constructor = WindowGroup;
+
+  WindowGroup.prototype.clear = function() {
+    this.windows.each((w) => {
       w.clear();
     });
   }
 
-  __windows.draw = function() {
-    __windowList.each((w) => {
+  WindowGroup.prototype.draw = function() {
+    this.windows.each((w) => {
       w.draw();
     });
   };
 
-  __windows.onMouseDown = function(e) {
-    __windowList.rwhile((curr) => {
+  WindowGroup.prototype.addWindow = function(w) {
+    this.windows.appendTail(w);
+  }
+
+  WindowGroup.prototype.bringWindowToFront = function(w) {
+    this.windows.remove(w);
+    this.windows.appendTail(w);
+  }
+
+  WindowGroup.prototype.onMouseDown = function(e) {
+    this.windows.rwhile((curr) => {
       if(curr.contains(e.x, e.y)){
-        if(__foregroundWindow !=  curr){
-          __foregroundWindow = curr;
-          __foregroundWindow.forceDraw()
-          __bringToFront(__foregroundWindow);
+        if(this.foregroundWindow !=  curr){
+          this.foregroundWindow = curr;
+          this.foregroundWindow.forceDraw()
+          this.bringWindowToFront(this.foregroundWindow);
         }
 
-        __foregroundWindow.handleMouseDown(e);
+        this.foregroundWindow.handleMouseDown(e);
         return false;
       }
 
@@ -775,32 +780,32 @@ let windows = (function() {
     });
   };
 
-  __windows.onMouseUp = function(e) {
-    if(__foregroundWindow)
-      __foregroundWindow.handleMouseUp(e);
+  WindowGroup.prototype.onMouseUp = function(e) {
+    if(this.foregroundWindow)
+      this.foregroundWindow.handleMouseUp(e);
   };
 
-  __windows.onMouseMove = function(e) {
-    if(__foregroundWindow)
-      __foregroundWindow.handleMouseMove(e);
+  WindowGroup.prototype.onMouseMove = function(e) {
+    if(this.foregroundWindow)
+      this.foregroundWindow.handleMouseMove(e);
   };
 
-  __windows.onMouseEnter = function(e) {
+  WindowGroup.prototype.onMouseEnter = function(e) {
     // nothing to do :|
   };
 
-  __windows.onMouseExit = function(e) {
-    __foregroundWindow = null;
+  WindowGroup.prototype.onMouseExit = function(e) {
+    this.foregroundWindow = null;
   };
 
-  __windows.onKeyDown = function(e) {
-    if(__foregroundWindow)
-      __foregroundWindow.handleKeyDown(e);
+  WindowGroup.prototype.onKeyDown = function(e) {
+    if(this.foregroundWindow)
+      this.foregroundWindow.handleKeyDown(e);
   };
 
-  __windows.onKeyUp = function(e) {
-    if(__foregroundWindow)
-      __foregroundWindow.handleKeyUp(e);
+  WindowGroup.prototype.onKeyUp = function(e) {
+    if(this.foregroundWindow)
+      this.foregroundWindow.handleKeyUp(e);
   };
 
   function Window(x, y, w, h) {
@@ -1142,15 +1147,6 @@ let windows = (function() {
     this.header.drawLine(this.header.tx - 25, 8, this.header.tx - 10, -8, this.closeIconColor);
   };
 
-  function __addToWindowList(w) {
-    __windowList.appendTail(w);
-  }
-
-  function __bringToFront(w) {
-    __windowList.remove(w);
-    __windowList.appendTail(w);
-  }
-
   function __calcSelectionDistance(e) {
     let selected = this.windowElements[this.selectedElementIndex];
     this.selectionDistance = utils.pointDiff({x: selected.x, y: selected.y}, e);
@@ -1363,9 +1359,12 @@ let windows = (function() {
   __new.Window = function (x, y, w, h) {
     let newWindow = new Window(x, y, w, h);
     newWindow.id = __availableWindowID++;
-    __addToWindowList(newWindow);
     return newWindow;
   };
+
+  __new.WindowGroup = function() {
+    return new WindowGroup(__availableWindowGroupID++);
+  }
 
   __windows.new = __new;
   return __windows;
@@ -1374,42 +1373,44 @@ let windows = (function() {
 let os = (() => {
   let __os = {};
 
-  let __appList = [];
+  let __apps = [];
+
+  let __windows = windows.new.WindowGroup();
 
   __os.init = () => {
     display.init();
     mouse.onMouseDown((e) => {
-      windows.onMouseDown(e);
+      __windows.onMouseDown(e);
     });
 
     mouse.onMouseUp((e) => {
-      windows.onMouseUp(e);
+      __windows.onMouseUp(e);
     });
 
     mouse.onMouseMove((e) => {
-      windows.onMouseMove(e);
+      __windows.onMouseMove(e);
     });
 
     mouse.onMouseEnter((e) => {
-      windows.onMouseEnter(e);
+      __windows.onMouseEnter(e);
     });
 
     mouse.onMouseExit((e) => {
-      windows.onMouseExit(e);
+      __windows.onMouseExit(e);
     });
 
     keyboard.onKeyDown((e) => {
-      windows.onKeyDown(e);
+      __windows.onKeyDown(e);
     });
 
     keyboard.onKeyUp((e) => {
-      windows.onKeyUp(e);
+      __windows.onKeyUp(e);
     });
   };
 
   __os.run = () => {
-    for(let i = 0; i < __appList.length; i++){
-      let app = __appList[i];
+    for(let i = 0; i < __apps.length; i++){
+      let app = __apps[i];
       if(!app.initialized && app.init)
         app.init();
 
@@ -1420,8 +1421,12 @@ let os = (() => {
         app.update();
     }
 
-    windows.draw();
+    __windows.draw();
     requestAnimationFrame(__os.run);
+  };
+
+  __os.onMouseDown = () => {
+
   };
 
   function Application(name, x, y, w, h) {
@@ -1436,7 +1441,7 @@ let os = (() => {
     this.context = {};
     this.window = windows.new.Window(x, y, w, h);
     this.window.attachApp(this);
-    console.log("window", this.window);
+    __windows.addWindow(this.window);
   }
 
   Application.prototype = Object.create(null); 
