@@ -1783,8 +1783,11 @@ otherApp.onUpdate(function() {
       drawingRegion = this.window.drawingRegion();
 
   drawingRegion.clear(this.context.clearColor);  
-  for(let c of clicks)
-    drawingRegion.strokeRect(c.x - 5, c.y - 5, 10, 10, colors.string(0, 0, 0, 1));
+  for(let c of clicks) {
+    let x = c.x - 5 + (-2 + Math.random() * 5),
+        y = c.y - 5 + (-2 + Math.random() * 4);
+    drawingRegion.strokeRect(x, y, 10, 10, colors.string(0, 0, 0, 1));
+  }
 });
 
 otherApp.onMouseMove(function(e) {
