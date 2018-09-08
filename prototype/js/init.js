@@ -95,6 +95,10 @@ let utils = (function() {
     return n.data;
   };
 
+  List.prototype.push = function(n) {
+    return this.appendTail(n);
+  }
+
   List.prototype.appendHead = function(n) {
     if(this.head === null){
       this.head = this.allocateNode(n);
@@ -796,13 +800,28 @@ let windows = (function() {
 
    function WindowGroup(id) {
     this.id = id;
+    this.overlapMap = {};
+    this.onWindowCloseAction = null;
     this.foregroundWindow = null;
     this.windows = utils.new.TransparentList();
-    this.overlapMap = {};
   }
 
   WindowGroup.prototype = Object.create(null);
   WindowGroup.prototype.constructor = WindowGroup;
+
+  WindowGroup.prototype.close = function(w, e) {
+    this.windows.remove(w);
+    this.handleWindowClose(w, e);
+  };
+
+  WindowGroup.prototype.onWindowClose = function(f) {
+    this.onWindowCloseAction = f;
+  };
+
+  WindowGroup.prototype.handleWindowClose = function(w, e) {
+    if(this.onWindowCloseAction)
+      this.onWindowCloseAction(w, e);
+  };
 
   WindowGroup.prototype.clear = function() {
     this.windows.each((w) => {
@@ -1298,7 +1317,8 @@ let windows = (function() {
   }
 
   function __closeWindow(e) {
-    console.log("close window");
+    this.clear();
+    this.group.close(this, e);
   }
 
   function __onMouseEnterNorthWestResize(e) {
@@ -1519,13 +1539,17 @@ let windows = (function() {
 let os = (() => {
   let __os = {};
 
-  let __apps = [];
+  let __apps = utils.new.List();
 
   let __uninitializedApps = [];
 
   let __foregroundApp = null;
 
   let __windows = windows.new.WindowGroup();
+
+  __windows.onWindowClose((w, e) => {
+
+  });
 
   __os.init = () => {
     display.init();
@@ -1594,7 +1618,11 @@ let os = (() => {
 
   __os.onKeyUp = (e) => {
     __windows.onKeyUp(e);
-  }
+  };
+
+  __os.onClose = (w, e) => {
+    let app = w.app;
+  };
 
   function Application(name, x, y, w, h) {
     this.name = name;
