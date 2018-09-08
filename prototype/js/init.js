@@ -316,7 +316,13 @@ let utils = (function() {
     return new BoundingCircle(x, y, r);
   };
 
+  let __copy = {};
+
+  __copy.BoundingBox = function(b) {
+    return new BoundingBox(b.x, b.y, b.w, b.h);
+  }
   __utils.new = __new;
+  __utils.copy = __copy;
   return __utils;
 })();
 
@@ -866,11 +872,11 @@ let windows = (function() {
       if(w.id === other.id)
         return;
 
-      if(utils.boundingBoxOverlap(w.bounds, other.bounds)){
+      if(utils.boundingBoxOverlap(w.lastBounds, other.bounds)){
         overlapping.push(other.id);
       }
     });
-    
+  
     return overlapping;
   };
 
@@ -940,6 +946,7 @@ let windows = (function() {
     this.body.addObserver(this);
 
     this.bounds = utils.new.BoundingBox(x, y, w, h + this.headerHeight);
+    this.lastBounds = this.bounds;
 
     this.minimize = utils.new.BoundingBox(x + this.header.w - 55, y + this.headerHeight / 2 - 10, 20, 20);
     this.close = utils.new.BoundingBox(x + this.header.w - 25, y + this.headerHeight / 2 - 10, 15, 20);
@@ -1198,6 +1205,7 @@ let windows = (function() {
     this.header.moveTo(newx, newy);
     this.body.moveTo(newx, newy + this.headerHeight);
 
+    this.lastBounds = utils.copy.BoundingBox(this.bounds);
     this.bounds.updatePosition(newx, newy);
     this.repositionWindowElements(newx, newy);
     if(this.group)
@@ -1371,6 +1379,7 @@ let windows = (function() {
     this.header.resize(newWidth, this.header.h);
     this.body.resize(newWidth, newHeight);
 
+    this.lastBounds = utils.copy.BoundingBox(this.bounds);
     this.bounds.updatePosition(newx, newy);
     this.bounds.updateDimension(newWidth, newHeight + this.headerHeight);
     if(this.group)
@@ -1409,6 +1418,7 @@ let windows = (function() {
     this.header.resize(newWidth, this.header.h);
     this.body.resize(newWidth, newHeight);
 
+    this.lastBounds = utils.copy.BoundingBox(this.bounds);
     this.bounds.updatePosition(this.bounds.x, newy);
     this.bounds.updateDimension(newWidth, newHeight + this.headerHeight);
     if(this.group)
@@ -1445,6 +1455,7 @@ let windows = (function() {
     this.header.resize(newWidth, this.header.h);
     this.body.resize(newWidth, newHeight);
 
+    this.lastBounds = utils.copy.BoundingBox(this.bounds);
     this.bounds.updatePosition(newx, this.bounds.y);
     this.bounds.updateDimension(newWidth, newHeight + this.headerHeight);
     if(this.group)
@@ -1477,6 +1488,7 @@ let windows = (function() {
     this.header.resize(newWidth, this.header.h);
     this.body.resize(newWidth, newHeight);
 
+    this.lastBounds = utils.copy.BoundingBox(this.bounds);
     this.bounds.updateDimension(newWidth, newHeight + this.headerHeight);
     this.minimize.updatePosition(this.header.x + this.header.w - 55, this.header.y + this.header.h / 2 - 10);
     if(this.group)
