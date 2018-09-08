@@ -1557,6 +1557,9 @@ let app = os.new.Application("test-app", -display.tx() + 10, -display.ty() + 10,
 app.onInit(function() {
   this.context.clicks = [];
   this.context.clearColor = colors.string(30, 30, 30, 1);
+  this.context.dx = 2;
+  this.context.defaultClickColor = colors.string(255, 255, 255, 1);
+  this.context.shiftClickColor = colors.string(120, 80, 0, 1);
 });
 
 app.onUpdate(function() {
@@ -1564,12 +1567,24 @@ app.onUpdate(function() {
       drawingRegion = this.window.drawingRegion();
 
   drawingRegion.clear(this.context.clearColor);
-  for(let c of clicks)
+  for(let c of clicks){
     drawingRegion.strokeArc(c.x, c.y, 10, c.c);
+    if(c.c === this.context.defaultClickColor){
+      c.x += this.context.dx;
+
+      if (c.x > drawingRegion.tx + 10)
+        c.x = -drawingRegion.tx - 10;
+    } else {
+      c.x -= this.context.dx;
+
+      if (c.x < -drawingRegion.tx - 10)
+        c.x = drawingRegion.tx + 10;
+    }
+  }
 });
 
 app.onMouseDown(function(e) {
-  let color = e.shift ? colors.string(120, 80, 0, 1) : colors.string(255, 255, 255, 1);
+  let color = e.shift ? this.context.shiftClickColor: this.context.defaultClickColor;
   this.context.clicks.push({x: e.x, y: e.y, c: color});
   this.context.redraw = true;
 });
