@@ -755,6 +755,7 @@ let windows = (function() {
   };
 
   WindowGroup.prototype.addWindow = function(w) {
+    this.foregroundWindow = w;
     this.windows.appendTail(w);
   }
 
@@ -1374,59 +1375,78 @@ let os = (() => {
 
   let __apps = [];
 
+  let __uninitializedApps = [];
+
+  let __foregroundApp = null;
+
   let __windows = windows.new.WindowGroup();
 
   __os.init = () => {
     display.init();
     mouse.onMouseDown((e) => {
-      __windows.onMouseDown(e);
+      __os.onMouseDown(e);
     });
 
     mouse.onMouseUp((e) => {
-      __windows.onMouseUp(e);
+      __os.onMouseUp(e);
     });
 
     mouse.onMouseMove((e) => {
-      __windows.onMouseMove(e);
-    });
-
-    mouse.onMouseEnter((e) => {
-      __windows.onMouseEnter(e);
-    });
-
-    mouse.onMouseExit((e) => {
-      __windows.onMouseExit(e);
+      __os.onMouseMove(e);
     });
 
     keyboard.onKeyDown((e) => {
-      __windows.onKeyDown(e);
+      __os.onKeyDown(e);
     });
 
     keyboard.onKeyUp((e) => {
-      __windows.onKeyUp(e);
+      __os.onKeyUp(e);
     });
   };
 
   __os.run = () => {
-    for(let i = 0; i < __apps.length; i++){
-      let app = __apps[i];
+    for(let i = __uninitializedApps.length - 1; i >= 0; i--){
+      let app = __uninitializedApps[i];
       if(!app.initialized && app.init)
         app.init();
 
       if(!app.started && app.start)
         app.start();
 
-      if(app.update)
+      if(app && app.update)
         app.update();
+
+      __uninitializedApps.splice(i, 1);
     }
+
+    if(__foregroundApp && __foregroundApp.update)
+        __foregroundApp.update();
 
     __windows.draw();
     requestAnimationFrame(__os.run);
   };
 
-  __os.onMouseDown = () => {
-
+  __os.onMouseDown = (e) => {
+    __windows.onMouseDown(e);
+    if(__windows.foregroundWindow)
+      __foregroundApp = __windows.foregroundWindow.app;
   };
+
+  __os.onMouseUp = (e) => {
+    __windows.onMouseUp(e);
+  };
+
+  __os.onMouseMove = (e) => {
+    __windows.onMouseMove(e);
+  };
+
+  __os.onKeyDown = (e) => {
+    __windows.onKeyDown(e);
+  };
+
+  __os.onKeyUp = (e) => {
+    __windows.onKeyUp(e);
+  }
 
   function Application(name, x, y, w, h) {
     this.name = name;
@@ -1507,15 +1527,21 @@ let os = (() => {
     return this;
   };
 
-  function __addToAppList(a) {
+  function __addApp(a) {
     __apps.push(a);
+  }
+
+  function __addUninitializedApp(a) {
+    __uninitializedApps.push(a);
   }
 
   let __new = {};
 
   __new.Application = function(name, x, y, w, h) {
     let newApp = new Application(name ? name : "no-name", x, y, w, h);
-    __addToAppList(newApp);
+    __foregroundApp = newApp;
+    __addApp(newApp);
+    __addUninitializedApp(newApp);
     return newApp;
   };
 
