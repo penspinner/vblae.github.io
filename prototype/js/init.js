@@ -52,11 +52,19 @@ let utils = (function() {
   __utils.containsPoint = function(x, y, bounds) {
     return __utils.inRange(x, bounds.x, bounds.x + bounds.w) && 
            __utils.inRange(y, bounds.y, bounds.y + bounds.h);
-  },
+  };
 
   __utils.inRange = function(value, min, max) {
     return value >= Math.min(min, max) && value <= Math.max(min, max);
-  }
+  };
+
+  __utils.boundingBoxOverlap = function(b0, b1) {
+    return __utils.containsPoint(b0.x, b0.y, b1) ||
+           __utils.containsPoint(b0.x + b0.w, b0.y, b1) ||
+           __utils.containsPoint(b0.x, b0.y + b0.h, b1) ||
+           __utils.containsPoint(b0.x + b0.w, b0.y + b0.h, b1) 
+
+  };
 
   function Node(data) {
     this.next = null;
@@ -84,7 +92,7 @@ let utils = (function() {
   };
 
   List.prototype.appendHead = function(n) {
-    if(this.head == null){
+    if(this.head === null){
       this.head = this.allocateNode(n);
       this.tail = this.head;
     }else{
@@ -97,7 +105,7 @@ let utils = (function() {
   };
 
   List.prototype.appendTail = function(n) {
-    if(this.tail == null){
+    if(this.tail === null){
       this.tail = this.allocateNode(n);
       this.head = this.tail;
     }else{
@@ -191,6 +199,44 @@ let utils = (function() {
     return n;
   };
 
+  function Queue() {
+    List.call(this);
+  }
+
+  Queue.prototype = Object.create(List.prototype);
+  Queue.prototype.constructor = Queue;
+
+  Queue.prototype.isEmpty = function() {
+    return this.head === null;
+  }
+
+  Queue.prototype.get = function() {
+    if(this.head === null)
+      return null;
+
+    let head = this.head,
+        next = this.head.next;
+
+    if(next)
+      next.prev = null;
+
+    this.head = next;
+    return this.evaluateNode(head);
+  };
+
+  Queue.prototype.add = function(n) {
+    this.appendTail(n);
+    return this;
+  };
+
+  Queue.prototype.addAll = function(l) {
+    for(let i = 0; i < l; i++) {
+      this.appendTail(l[i]);
+    }
+
+    return this;
+  };
+
   function BoundingBox(x, y, w, h) {
     this.x = x;
     this.y = y;
@@ -250,6 +296,10 @@ let utils = (function() {
 
   __new.TransparentList = function() {
     return new TransparentList();
+  };
+
+  __new.Queue = function() {
+    return new Queue();
   };
 
   __new.BoundingBox = function(x, y, w, h) {
@@ -737,6 +787,7 @@ let windows = (function() {
     this.id = id;
     this.foregroundWindow = null;
     this.windows = utils.new.TransparentList();
+    this.overlapMap = {};
   }
 
   WindowGroup.prototype = Object.create(null);
@@ -749,20 +800,75 @@ let windows = (function() {
   }
 
   WindowGroup.prototype.draw = function() {
+    let i = 0,
+      requireRedraw = new Map();
+        
     this.windows.each((w) => {
-      w.draw();
+      if(w.redrawHeader || w.redrawBody)
+        requireRedraw.set(w.id, w);
+    });
+
+    let redrawSet = new Set();
+    requireRedraw.forEach((value, id) => {
+      if(redrawSet.has(id))
+        return;
+
+      redrawSet.add(id);
+      function __addOverlappingWindows(w) {
+        let visited = new Set(),
+            visitQueue = utils.new.Queue();
+
+        visited.add(w.id);
+        visitQueue.addAll(this.overlapMap[w.id]);
+        while(!visitQueue.isEmpty()) {
+          let current = visitedQueue.get();
+          if(visited.has(current.id))
+            continue;
+
+          redrawSet.add(current.id);
+          visited.add(current.id);
+          visitQueue.addAll(this.overlapMap[current.id]);
+        }
+      }
+      __addOverlappingWindows.call(this, value);
+    });
+
+    this.windows.each((w) => {
+      if(redrawSet.has(w.id)){
+        w.forceDraw();
+        w.draw();
+      }
     });
   };
 
   WindowGroup.prototype.addWindow = function(w) {
+    w.group = this;
     this.foregroundWindow = w;
     this.windows.appendTail(w);
+    this.calculateOverlapMap(w);
+  };
+
+  WindowGroup.prototype.calculateOverlapMap = function (w) {
+    this.overlapMap[w.id] = this.getOverlapList(w);
   }
+
+  WindowGroup.prototype.getOverlapList = function(w) {
+    let overlapping = [];
+    this.windows.each((other) => {
+      if(w.id === other.id)
+        return;
+
+      if(utils.boundingBoxOverlap(w.bounds, other.bounds))
+        overlapping.push(other.id);
+    });
+
+    return overlapping;
+  };
 
   WindowGroup.prototype.bringWindowToFront = function(w) {
     this.windows.remove(w);
     this.windows.appendTail(w);
-  }
+  };
 
   WindowGroup.prototype.onMouseDown = function(e) {
     this.windows.rwhile((curr) => {
@@ -814,6 +920,7 @@ let windows = (function() {
     this.prev = null;
 
     this.id = null;
+    this.group = null;
     this.minimized = false;
     this.redrawHeader = true;
     this.redrawBody = true;
@@ -1083,6 +1190,8 @@ let windows = (function() {
 
     this.bounds.updatePosition(newx, newy);
     this.repositionWindowElements(newx, newy);
+    if(this.group)
+      this.group.calculateOverlapMap(this);
   };
 
   Window.prototype.toInnerCoordinates = function(e) {
@@ -1165,6 +1274,9 @@ let windows = (function() {
       this.bounds.updateDimension(this.header.w, this.header.h);
     else
       this.bounds.updateDimension(this.header.w, this.header.h + this.body.h);
+
+    if(this.group)
+      this.group.calculateOverlapMap(this);
   }
 
   function __closeWindow(e) {
@@ -1251,6 +1363,9 @@ let windows = (function() {
 
     this.bounds.updatePosition(newx, newy);
     this.bounds.updateDimension(newWidth, newHeight + this.headerHeight);
+    if(this.group)
+      this.group.calculateOverlapMap(this);
+
     this.minimize.updatePosition(this.header.x + this.header.w - 55, this.header.y + this.header.h / 2 - 10);
     this.close.updatePosition(this.header.x + this.header.w - 25, this.header.y + this.header.h / 2 - 10);
     this.northWestResize.updatePosition(newx, newy);
@@ -1286,6 +1401,9 @@ let windows = (function() {
 
     this.bounds.updatePosition(this.bounds.x, newy);
     this.bounds.updateDimension(newWidth, newHeight + this.headerHeight);
+    if(this.group)
+      this.group.calculateOverlapMap(this);
+
     this.minimize.updatePosition(this.header.x + this.header.w - 55, this.header.y + this.header.h / 2 - 10);
     this.close.updatePosition(this.header.x + this.header.w - 25, this.header.y + this.header.h / 2 - 10);
     this.northWestResize.updatePosition(this.northWestResize.x, newy);
@@ -1319,6 +1437,9 @@ let windows = (function() {
 
     this.bounds.updatePosition(newx, this.bounds.y);
     this.bounds.updateDimension(newWidth, newHeight + this.headerHeight);
+    if(this.group)
+      this.group.calculateOverlapMap(this);
+
     this.northWestResize.updatePosition(newx, this.northWestResize.y);
     this.southWestResize.updatePosition(newx, newy);
     this.southEastResize.updatePosition(this.southEastResize.x, newy);
@@ -1348,6 +1469,9 @@ let windows = (function() {
 
     this.bounds.updateDimension(newWidth, newHeight + this.headerHeight);
     this.minimize.updatePosition(this.header.x + this.header.w - 55, this.header.y + this.header.h / 2 - 10);
+    if(this.group)
+      this.group.calculateOverlapMap(this);
+
     this.close.updatePosition(this.header.x + this.header.w - 25, this.header.y + this.header.h / 2 - 10);
     this.northEastResize.updatePosition(newx, this.northEastResize.y);
     this.southWestResize.updatePosition(this.southWestResize.x, newy);
@@ -1550,7 +1674,6 @@ let os = (() => {
 })();
 
 os.init();
-os.run();
 
 let app = os.new.Application("test-app", -display.tx() + 10, -display.ty() + 10, 1176, 600);
 
@@ -1622,3 +1745,5 @@ otherApp.onKeyDown(function(e) {
     this.context.redraw = true;
   }
 });
+
+os.run();
