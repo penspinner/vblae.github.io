@@ -1004,6 +1004,17 @@ let windows = (function() {
       __calcSelectionDistance,
     ];
 
+    this.windowElementsOnMouseUp = [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ];
+
     this.windowElementsOnMouseDrag = [
         __northWestResize,
         __northEastResize,
@@ -1108,7 +1119,8 @@ let windows = (function() {
   };
 
   Window.prototype.handleMouseUp = function(e) {
-    this.selectedElementIndex = -1;
+      this.selectedElementIndex = -1;
+      this.dispatchEvent(events.MOUSE_UP, e);
   };
 
   Window.prototype.handleMouseMove = function(e) {
@@ -1791,7 +1803,16 @@ otherApp.onUpdate(function() {
 });
 
 otherApp.onMouseMove(function(e) {
-  this.context.clicks.push(e);
+  if(this.context.shiftDown)
+    this.context.clicks.push(e);
+});
+
+otherApp.onMouseDown(function(e) {
+  this.context.shiftDown = true;
+});
+
+otherApp.onMouseUp(function(e) {
+  this.context.shiftDown = false;
 });
 
 otherApp.onKeyDown(function(e) {
