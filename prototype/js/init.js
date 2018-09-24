@@ -399,11 +399,11 @@ let display = (function() {
   };
 
   __display.randx = function() {
-    return -__tx + Math.random() * 2.0 * __tx;
+    return -__region.tx + Math.random() * 2.0 * __region.tx;
   };
 
   __display.randy = function() {
-    return -__ty + Math.random() * 2.0 * __ty;
+    return -__region.ty + Math.random() * 2.0 * __region.ty;
   };
 
   __display.randpos = function() {
@@ -1823,3 +1823,4 @@ otherApp.onKeyDown(function(e) {
 });
 
 os.run();
+
