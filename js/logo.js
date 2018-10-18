@@ -1,4 +1,4 @@
-window.onload = function () {  
+function _logo() {  
   var cnvs = document.getElementById("canvas"),
       ctx  = cnvs.getContext("2d"),
 
